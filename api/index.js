@@ -71,7 +71,7 @@ app.get("/auth", (req, res) => {
 });
 
 app.get("/acc", (req, res) => {
-  const accounts = fs.readFileSync("accounts.json", "utf-8");
+  const accounts = fs.readFileSync("./public/accounts.json", "utf-8");
   res.send(JSON.parse(accounts));
 });
 
