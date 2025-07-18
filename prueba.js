@@ -1,35 +1,85 @@
-import express from "express"
+import express from "express";
+import fs from "node:fs";
 
-const app = express()
+const app = express();
+
+app.use(express.json());
 
 const appInfo = {
-    client_id: 19568,
-    client_secret: "79f3449e947c0920a7d334eca74349aad0574323600568f1",
-    grant_type: "authorization_code",
-    code: ""
+  client_id: 19568,
+  client_secret: "79f3449e947c0920a7d334eca74349aad0574323600568f1",
+  grant_type: "authorization_code",
+  code: "",
+};
+
+function writeAccount(data) {
+  try {
+    fs.readFileSync("./accounts.json", "utf-8", (error, data) => {
+        if(error) throw new Error(error)
+        try{
+            const json = JSON.parse(data)
+            
+        } catch (error) {
+            throw new Error(error)
+        }
+    })
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 app.get("/", (req, res) => {
-    res.send("Hola")
-})
+  res.send("Hola");
+});
 
 app.get("/auth", (req, res) => {
-    const { code } = req.query
-    console.log(code)
+  const { code } = req.query;
+  console.log(code);
 
-    appInfo.code = code
+  appInfo.code = code;
 
-    fetch("https://www.tiendanube.com/apps/authorize/token", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(appInfo) 
-    }).then(res => res.json()).then(data => console.log(data)).catch(error => console.log(error))
+  fetch("https://www.tiendanube.com/apps/authorize/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(appInfo),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data);
+      writeAccount(data);
+    })
+    .catch((error) => console.log(error));
 
-    res.send(code)
-})
+  res.send("Bien");
+});
+
+app.get("/acc", (req, res) => {
+  const accounts = fs.readFileSync("accounts.json", "utf-8");
+  res.send(JSON.parse(accounts));
+});
+
+app.post("/prod", (req, res) => {
+  const accounts = JSON.parse(fs.readFileSync("accounts.json", "utf-8"));
+
+  accounts.map((acc) => {
+    fetch(`https://api.tiendanube.com/v1/${acc.user_id}/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: `bearer ${acc.access_token}`,
+        "User-Agent": "prueba (joackomdp2006@gmail.com)",
+      },
+      body: JSON.stringify(req.body),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((error) => console.log(error));
+  });
+  res.send("Productos creados");
+});
 
 app.listen(3000, () => {
-    console.log("http://localhost:3000")
-})
+  console.log("http://localhost:3000");
+});
