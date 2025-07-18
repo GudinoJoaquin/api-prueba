@@ -5,7 +5,6 @@ import { productos } from "./data.js";
 const app = express();
 
 app.use(express.json());
-app.use(express.static("public"));
 
 const appInfo = {
   client_id: 19568,
@@ -18,7 +17,13 @@ function saveAccount(newData) {
   try {
     let data = fs.readFileSync("./accounts.json", "utf-8");
     const json = JSON.parse(data);
-    json.push(newData);
+    json.map((acc) => {
+      if (acc.user_id === newData.user_id) {
+        acc.access_token = newData.access_token;
+      } else {
+        json.push(newData);
+      }
+    });
     fs.writeFileSync("./accounts.json", JSON.stringify(json, null, 2));
   } catch (error) {
     console.log("Error writing account:", error);
