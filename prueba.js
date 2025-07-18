@@ -12,19 +12,14 @@ const appInfo = {
   code: "",
 };
 
-function writeAccount(data) {
+function writeAccount(newData) {
   try {
-    fs.readFileSync("./accounts.json", "utf-8", (error, data) => {
-        if(error) throw new Error(error)
-        try{
-            const json = JSON.parse(data)
-            
-        } catch (error) {
-            throw new Error(error)
-        }
-    })
+    let data = fs.readFileSync("./accounts.json", "utf-8");
+    const json = JSON.parse(data);
+    json.push(newData);
+    fs.writeFileSync("./accounts.json", JSON.stringify(json, null, 2));
   } catch (error) {
-    console.log(error);
+    console.log("Error writing account:", error);
   }
 }
 
