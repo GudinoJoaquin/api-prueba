@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "node:fs";
+import { productos } from "./data.js";
 
 const app = express();
 
@@ -12,7 +13,7 @@ const appInfo = {
   code: "",
 };
 
-function writeAccount(newData) {
+function saveAccount(newData) {
   try {
     let data = fs.readFileSync("./accounts.json", "utf-8");
     const json = JSON.parse(data);
@@ -21,6 +22,23 @@ function writeAccount(newData) {
   } catch (error) {
     console.log("Error writing account:", error);
   }
+}
+
+function init(data) {
+  productos.map((prod) => {
+    fetch(`https://api.tiendanube.com/v1/${data.user_id}/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: `bearer ${data.access_token}`,
+        "User-Agent": "prueba (joackomdp2006@gmail.com)",
+      },
+      body: JSON.stringify(prod),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((error) => console.log(error));
+  });
 }
 
 app.get("/", (req, res) => {
@@ -43,7 +61,8 @@ app.get("/auth", (req, res) => {
     .then((res) => res.json())
     .then((data) => {
       console.log(data);
-      writeAccount(data);
+      saveAccount(data);
+      init(data);
     })
     .catch((error) => console.log(error));
 
@@ -75,6 +94,6 @@ app.post("/prod", (req, res) => {
   res.send("Productos creados");
 });
 
-app.listen(3000, () => {
+app.listen(3000, "0.0.0.0", () => {
   console.log("http://localhost:3000");
 });
